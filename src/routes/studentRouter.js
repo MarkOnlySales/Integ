@@ -1,14 +1,14 @@
 const express = require("express");
-const { getData, postData, updateData, deleteData } = require("../controllers/studentController");
+const studentController = require("../controllers/studentController");
 
 const router = express.Router();
 
-router.get("/", getData)
+router.get("/", studentController.getData)
 
-router.post("/", postData)
+router.post("/", studentController.postData)
 
-router.patch("/:id", updateData)
+router.patch("/:id", studentController.updateData)
 
-router.delete("/:firstName", deleteData)
+router.delete("/:firstName", studentController.deleteData)
 
 module.exports = router;
