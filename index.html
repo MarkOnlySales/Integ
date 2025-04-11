@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Socket.IO Chat</title>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    #messages {
+      list-style-type: none;
+      padding: 0;
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      margin-bottom: 20px;
+    }
+    #privateMessages {
+      list-style-type: none;
+      padding: 0;
+      max-height: 150px;
+      overflow-y: auto;
+      border: 1px solid #aaa;
+      margin-top: 10px;
+    }
+    input, button {
+      padding: 5px;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Group Chat</h2>
+  <ul id="messages"></ul>
+
+  <input id="groupInput" autocomplete="off" placeholder="Group message..." />
+  <button onclick="sendGroupMessage()">Send</button>
+
+  <hr />
+
+  <h3>Private Chat</h3>
+  <input id="privateTo" placeholder="To User ID" />
+  <input id="privateMessage" placeholder="Your private message..." />
+  <button onclick="sendPrivateMessage()">Send</button>
+
+  <ul id="privateMessages"></ul>
+
+  <script>
+    // Prompt for your user ID
+    const userId = prompt("Enter your user ID:");
+    const socket = io("http://localhost:3000", {
+      query: { userId }
+    });
+
+    const groupUl = document.getElementById("messages");
+    const privateUl = document.getElementById("privateMessages");
+
+    // Group chat receive
+    socket.on("groupchat", (msg) => {
+      const li = document.createElement("li");
+      li.textContent = msg;
+      groupUl.appendChild(li);
+    });
+
+    // Private chat receive
+    socket.on("privatechat", (data) => {
+      const li = document.createElement("li");
+      if (data.error) {
+        li.textContent = `❌ Error: ${data.error}`;
+        li.style.color = "red";
+      } else {
+        li.textContent = `🔒 From ${data.from}: ${data.message}`;
+      }
+      privateUl.appendChild(li);
+    });
+
+    // Disconnected user notice
+    socket.on("userDisconnected", (userId) => {
+      const li = document.createElement("li");
+      li.textContent = `⚠️ User ${userId} disconnected.`;
+      li.style.color = "orange";
+      groupUl.appendChild(li);
+    });
+
+    function sendGroupMessage() {
+      const input = document.getElementById("groupInput");
+      const message = input.value.trim();
+      if (message) {
+        socket.emit("groupchat", message);
+        input.value = "";
+      }
+    }
+
+    function sendPrivateMessage() {
+      const to = document.getElementById("privateTo").value.trim();
+      const message = document.getElementById("privateMessage").value.trim();
+      if (to && message) {
+        socket.emit("privatechat", { to, message });
+        document.getElementById("privateMessage").value = "";
+      }
+    }
+  </script>
+</body>
+</html>

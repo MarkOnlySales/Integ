@@ -1,11 +1,20 @@
 const User = require("../schemas/User");
 const userModel = require("../models/userModel")
+const { getIo } = require("../libs/socket")
 
 
 module.exports = {
     getData: async (req, res) => {
         try {
+            const { userId } = req.query;
+
             const users = await User.find();
+
+            const io = getIo()
+
+            if (userId) {
+                io.emit("users123", { users })
+            }
     
             res.status(200).json({ data: users })
         }
@@ -43,9 +52,9 @@ module.exports = {
     },
     deleteData: async (req, res) => {
         try {
-            const name = req.params.firstName;
+            const id = req.params.id;
     
-            await User.deleteOne({ firstName: name })
+            await User.deleteOne({ _id: id })
     
             return res.status(204).json()
         }

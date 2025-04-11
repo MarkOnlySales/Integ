@@ -1,15 +1,20 @@
-const express = require("express");
+const { createServer } = require("http");
 const studentRouter = require("./routes/studentRouter")
 const adminRouter = require("./routes/adminRouter")
 const addressRouter = require("./routes/addressRouter")
 const dbConnection = require("./libs/db");
+const {socketConnection} = require("./libs/socket")
+const expressApp = require("./app")
 const project = require("../package.json")
 const { limiter1, limiter2 } = require("./libs/rateLimit")
 
 
-const app = express();
+const app = expressApp()
 
-app.use(express.json());
+const server = createServer(app)
+
+socketConnection(server)
+
 app.use("/student", limiter1, studentRouter);
 app.use("/admin", limiter2, adminRouter);
 app.use("/address", addressRouter);
@@ -24,11 +29,10 @@ app.get("/", (req, res) => {
 })
 
 
-
 dbConnection((client) => {
     if(client) {
-        app.listen(process.env.PORT || 3000, () => {
-            console.log("Server is running on port 3000");
+        server.listen(process.env.PORT || 3000, () => {
+            console.log(`Server is running on port ${process.env.PORT || 3000}`);
         })
     }
     else {
