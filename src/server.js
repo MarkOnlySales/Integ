@@ -6,6 +6,8 @@ const dbConnection = require("./libs/db");
 const {socketConnection} = require("./libs/socket")
 const expressApp = require("./app")
 const project = require("../package.json")
+const { limiter1, limiter2 } = require("./libs/rateLimit")
+
 
 const app = expressApp()
 
@@ -13,8 +15,8 @@ const server = createServer(app)
 
 socketConnection(server)
 
-app.use("/student", studentRouter);
-app.use("/admin", adminRouter);
+app.use("/student", limiter1, studentRouter);
+app.use("/admin", limiter2, adminRouter);
 app.use("/address", addressRouter);
 
 
