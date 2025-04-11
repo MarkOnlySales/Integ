@@ -4,12 +4,14 @@ const adminRouter = require("./routes/adminRouter")
 const addressRouter = require("./routes/addressRouter")
 const dbConnection = require("./libs/db");
 const project = require("../package.json")
+const { limiter1, limiter2 } = require("./libs/rateLimit")
+
 
 const app = express();
 
 app.use(express.json());
-app.use("/student", studentRouter);
-app.use("/admin", adminRouter);
+app.use("/student", limiter1, studentRouter);
+app.use("/admin", limiter2, adminRouter);
 app.use("/address", addressRouter);
 
 
